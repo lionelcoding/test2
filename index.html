@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive E-Learning Platform</title>
+    <!-- Tailwind CDN (for quick prototyping) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Plyr player styles -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  
+    <script>
+      // Embedded lessons data for GitHub Pages deployment
+      window.EMBEDDED_LESSONS = [{"id":7,"title":"Here's how you upload and playback a video using M...","description":"Here's how you upload and playback a video using Mux in 60 seconds. First, log in to your Mux dashboard and create a new access token. This will allow you to make an authenticated request to the Mux A...","videoUrl":"https://www.youtube.com/watch?v=HFYfI_ZC3EQ","thumbnailUrl":"https://img.youtube.com/vi/HFYfI_ZC3EQ/maxresdefault.jpg","tags":["learn","AI-generated","video-lesson"],"duration":117,"transcript":[{"text":"Here's how you upload and playback a video using Mux in 60 seconds.","startTime":0},{"text":"First, log in to your Mux dashboard and create a new access token.","startTime":4},{"text":"This will allow you to make an authenticated request to the Mux API.","startTime":8},{"text":"Once you have the token, copy it and head on over to an API Explorer application.","startTime":12},{"text":"I'm using Bruno here.","startTime":17},{"text":"The request should use basic authentication.","startTime":18},{"text":"Set the username to your access token and the password to the secret key to make the","startTime":21},{"text":"request.","startTime":25},{"text":"You're going to make a POST request to the Mux assets endpoint.","startTime":26},{"text":"Set the body to include the public URL to the video that you have stored somewhere,","startTime":29},{"text":"S3, Google Drive, and so on.","startTime":33},{"text":"Here I'm also setting the playback policy to public and encoding tier to baseline for","startTime":35},{"text":"free encoding.","startTime":39},{"text":"Now click send.","startTime":40},{"text":"We can see that the asset is already preparing.","startTime":41},{"text":"Back in the Mux dashboard, click on assets and you'll be able to see that your new video","startTime":44},{"text":"is now visible.","startTime":48},{"text":"If you scroll down, you can find some embed code under the build tab that you can use","startTime":49},{"text":"to play this video back.","startTime":53},{"text":"I'll just pop over to a code sandbox and add this embed code so we can see that the video","startTime":54},{"text":"is ready to go.","startTime":58},{"text":"And that's it!","startTime":60},{"text":"You just uploaded and played back your first video with Mux.","startTime":61},{"text":"Wait, wait, wait.","startTime":63},{"text":"That's cool and all, but why stream with Mux in the first place?","startTime":65},{"text":"Well, because we take care of all the annoying stuff it takes to build video from scratch,","startTime":67},{"text":"ensuring the best video performance while still providing the flexibility developers","startTime":72},{"text":"need.","startTime":76},{"text":"So you can do things like create a custom player that fits your brand, build in automatic","startTime":77},{"text":"thumbnails and GIFs, as well as scrollable storyboards and AI powered captions.","startTime":83},{"text":"Finally, get all the performance data you could ever want.","startTime":88},{"text":"We also provide flexible pricing to meet your needs.","startTime":93},{"text":"Here are some of the companies who built video integrations with Mux.","startTime":96},{"text":"We researched a few different options and Mux was the best as far as cost and we realized,","startTime":101},{"text":"oh, it's actually really developer friendly.","startTime":106},{"text":"We've integrated it deeper into the platform, so now all the video in the platform is powered","startTime":108},{"text":"by Mux.","startTime":112},{"text":"Head over to our docs to learn more or check out some of the developer chats or customer","startTime":113},{"text":"stories on our channel to get inspired.","startTime":117}],"chapters":[{"title":"Introduction to Mux Video Upload","startTime":0},{"title":"Creating an Access Token","startTime":10},{"title":"Making an API Request","startTime":20},{"title":"Preparing the Video Asset","startTime":40},{"title":"Embedding the Video for Playback","startTime":50},{"title":"Benefits of Using Mux","startTime":70},{"title":"Developer-Friendly Features","startTime":90},{"title":"Conclusion and Further Resources","startTime":110}],"createdAt":"2025-07-15 14:45:11","updatedAt":"2025-07-15 14:45:11"}];
+      window.IS_GITHUB_PAGES = true;
+      
+      // Auto-load lessons when DOM is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('GitHub Pages deployment - DOM ready');
+        
+        // Ensure dashboard is visible
+        const homeScreen = document.getElementById('home-screen');
+        const appGrid = document.getElementById('app-grid');
+        
+        if (homeScreen && appGrid) {
+          homeScreen.classList.remove('hidden');
+          appGrid.classList.add('hidden');
+          console.log('Dashboard visibility set correctly');
+        }
+        
+        // Load lessons into dashboard
+        if (window.EMBEDDED_LESSONS && window.EMBEDDED_LESSONS.length > 0) {
+          console.log('Loading', window.EMBEDDED_LESSONS.length, 'lessons into dashboard');
+          setTimeout(() => {
+            if (typeof loadLessons === 'function') {
+              loadLessons();
+            } else {
+              console.warn('loadLessons function not available yet');
+            }
+          }, 100);
+        }
+      });
+    </script>
+  
+</head>
+  <body class="font-sans bg-[#21262c] text-white min-h-screen flex flex-col">
+
+    <!-- SIDEBAR TOGGLE BUTTON -->
+    <button
+      id="toggle-sidebar"
+      class="hidden fixed top-2 left-4 z-20 items-center justify-center w-8 h-8 bg-[#21262c] text-white rounded-full border border-zinc-700 hover:bg-zinc-800 transition"
+      aria-label="Toggle Sidebar"
+    >
+      <!-- Chevron icon -->
+      <svg
+        id="chevron-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="transform rotate-0"
+      >
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+
+    <!-- HOME SCREEN WITH SIDEBAR -->
+    <div id="home-screen" class="flex min-h-screen">
+      <!-- Mobile Sidebar Toggle -->
+      <button
+        id="mobile-sidebar-toggle"
+        class="fixed top-4 left-4 z-50 p-2 bg-zinc-800 text-white rounded-lg md:hidden"
+        aria-label="Toggle Sidebar"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      
+      <!-- LEFT SIDEBAR -->
+      <div id="home-sidebar" class="w-64 bg-zinc-900 border-r border-zinc-700 flex flex-col fixed md:relative h-full md:h-auto z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+        <!-- Header -->
+        <div class="p-4 border-b border-zinc-700">
+          <h2 class="text-xl font-semibold text-white">Navigation</h2>
+        </div>
+        
+        <!-- Navigation Items -->
+        <div class="flex-1 p-4 space-y-2">
+          <!-- Home -->
+          <div class="flex items-center gap-3 px-3 py-2 text-blue-400 bg-blue-900/20 rounded-lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9,22 9,12 15,12 15,22"/>
+            </svg>
+            <span class="font-medium">Home</span>
+          </div>
+          
+          <!-- Folder -->
+          <div class="flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-zinc-800 rounded-lg cursor-pointer transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>My Lessons</span>
+          </div>
+          
+          <!-- Recent -->
+          <div class="flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-zinc-800 rounded-lg cursor-pointer transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12,6 12,12 16,14"/>
+            </svg>
+            <span>Recent</span>
+          </div>
+          
+          <!-- Favorites -->
+          <div class="flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-zinc-800 rounded-lg cursor-pointer transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+            </svg>
+            <span>Favorites</span>
+          </div>
+          
+          <!-- Trash -->
+          <div class="flex items-center gap-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-zinc-800 rounded-lg cursor-pointer transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3,6 5,6 21,6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Trash</span>
+          </div>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="p-4 border-t border-zinc-700">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search lessons..."
+              class="w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sidebar Overlay for Mobile -->
+      <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+      
+      <!-- MAIN CONTENT -->
+      <div class="flex-1 flex flex-col md:ml-0">
+        <!-- Top Bar -->
+        <div class="p-4 border-b border-zinc-700 flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-white">Dashboard</h1>
+            <p class="text-gray-400">Welcome back! Create and manage your video lessons</p>
+          </div>
+          <button
+            id="settings-btn"
+            class="p-2 text-gray-400 hover:text-white hover:bg-zinc-700 rounded-lg transition"
+            title="Settings"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto p-8">
+          <!-- Welcome Section -->
+          <div id="welcome-section" class="text-center mb-12">
+            <div class="mb-8">
+              <div class="w-16 h-16 bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-400">
+                  <polygon points="23,7 16,12 23,17"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+              </div>
+              <h2 class="text-3xl font-bold mb-4 text-white">Interactive E-Learning Platform</h2>
+              <p class="text-gray-400 mb-8">Transform any video into an interactive learning experience with AI-powered transcription and chapter generation</p>
+            </div>
+            
+            <button
+              id="new-lesson-btn"
+              class="px-8 py-4 bg-blue-700 rounded-lg text-lg font-medium hover:bg-blue-600 transition flex items-center gap-3 mx-auto shadow-lg"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Create New Lesson
+            </button>
+            
+            <div class="mt-8 grid grid-cols-3 gap-4 text-sm">
+              <div class="text-center">
+                <div class="text-blue-400 font-semibold">AI Transcription</div>
+                <div class="text-gray-500">Automatic speech-to-text</div>
+              </div>
+              <div class="text-center">
+                <div class="text-blue-400 font-semibold">Smart Chapters</div>
+                <div class="text-gray-500">Auto-generated sections</div>
+              </div>
+              <div class="text-center">
+                <div class="text-blue-400 font-semibold">Interactive Player</div>
+                <div class="text-gray-500">Enhanced video experience</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Lessons Grid -->
+          <div id="lessons-section" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-white">Your Lessons</h2>
+              <div class="flex items-center gap-3">
+                <button
+                  id="regenerate-pages-btn"
+                  class="px-3 py-2 bg-purple-700 hover:bg-purple-600 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                  title="Regenerate all lesson pages"
+                  onclick="regenerateAllPages()"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 4v6h6"/>
+                    <path d="M23 20v-6h-6"/>
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10"/>
+                    <path d="M3.51 15a9 9 0 0 0 14.85 3.36L23 14"/>
+                  </svg>
+                  Regenerate Pages
+                </button>
+                <button
+                  id="deploy-github-btn"
+                  class="px-3 py-2 bg-green-700 hover:bg-green-600 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                  title="Deploy to GitHub Pages"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                  </svg>
+                  Deploy
+                </button>
+                <button
+                  id="select-all-btn"
+                  class="px-3 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3 8-8"/>
+                    <path d="M21 12c0 1.67-.4 3.24-1.1 4.64"/>
+                    <path d="M3 3l18 18"/>
+                  </svg>
+                  Select All
+                </button>
+                <button
+                  id="new-lesson-btn-2"
+                  class="px-4 py-2 bg-blue-700 rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center gap-2"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  New Lesson
+                </button>
+              </div>
+            </div>
+            
+            <!-- Bulk Actions Bar -->
+            <div id="bulk-actions-bar" class="hidden bg-zinc-800 border border-zinc-700 rounded-lg p-4 mb-6">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                  <span id="selected-count" class="text-sm text-gray-300">0 lessons selected</span>
+                  <button
+                    id="clear-selection-btn"
+                    class="text-sm text-blue-400 hover:text-blue-300 underline"
+                  >
+                    Clear selection
+                  </button>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    id="delete-selected-btn"
+                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Delete Selected
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div id="lessons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <!-- Lesson cards will be dynamically inserted here -->
+            </div>
+            
+            <div id="no-lessons" class="text-center py-12 hidden">
+              <div class="text-gray-400 mb-4">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mx-auto mb-4">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="12" cy="12" r="1"/>
+                </svg>
+                <p class="text-lg">No lessons found</p>
+                <p class="text-sm">Create your first lesson to get started</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN LAYOUT WRAPPER -->
+    <div
+      id="app-grid"
+      class="hidden text-zinc-100 w-full min-h-[778px] flex"
+    >
+      <main class="min-h-[778px] bg-[#21262c] grow-[1] flex relative flex-col">
+        <div class="h-[778px] flex">
+          <div class="grow-[1] flex overflow-x-auto overflow-y-hidden flex-col">
+            <div class="h-0"></div>
+            <div class="grow-[1] relative overflow-hidden">
+              <div class="overflow-x-hidden overflow-y-scroll size-full">
+                <div class="min-w-full">
+                  <div class="w-full h-[707.98px] flex flex-col gap-2">
+                    <div class="flex gap-2">
+                      <div class="pt-8 grow-[1] flex flex-col gap-4">
+                        <div class="flex flex-col">
+                          <div class="flex justify-between items-center"></div>
+                          <div class="w-full overflow-auto justify-center">
+                            <div class="w-full flex flex-col items-center">
+                              <div class="mb-12 flex relative overflow-hidden flex-col size-full">
+                                <div class="flex flex-col px-16">
+                                  <div class="grow-[1] relative">
+                                    <!-- BACK BUTTON -->
+                                    <div class="mb-6">
+                                      <button
+                                        id="back-to-home"
+                                        class="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-105"
+                                        title="Back to home (Press Escape)"
+                                      >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition-transform duration-200">
+                                          <path d="M19 12H5M12 19l-7-7 7-7"/>
+                                        </svg>
+                                        <span class="font-medium">Back to Home</span>
+                                      </button>
+                                    </div>
+                                    
+                                    <div id="main-grid" class="grid-cols-1 lg:grid-cols-[1fr_410px] grid relative gap-6">
+                                      
+                                      <!-- MAIN CONTENT COLUMN -->
+                                      <div class="w-full z-[10] relative">
+                                        <div class="w-full relative">
+                                          <div class="w-full relative">
+                                            <!-- VIDEO PLAYER -->
+                                            <div class="w-full bg-zinc-900 shadow-[_#0000001a_0px_4px_6px_-1px,_#0000001a_0px_2px_4px_-2px] relative overflow-hidden rounded-[6.4px]">
+                                              <div class="pb-[56.25%] w-full relative">
+                                                <div class="absolute inset-0">
+                                                  <video
+                                                    id="player"
+                                                    playsinline
+                                                    controls
+                                                    class="leading-[0] inline-block overflow-hidden object-cover rounded-[6.4px] size-full"
+                                                  ></video>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          
+                                          <!-- LESSON METADATA -->
+                                          <div class="pt-4">
+                                            <div class="flex justify-between items-start gap-8">
+                                              <h1 id="lesson-title" class="mb-4 leading-[28px] max-w-3/4 text-xl font-semibold"></h1>
+                                            </div>
+                                            <div class="mb-4">
+                                              <p id="lesson-description" class="text-gray-300 leading-[20px] text-sm"></p>
+                                            </div>
+                                            
+                                            <!-- ACTION BUTTONS -->
+                                            <div class="mt-4 w-full flex justify-between items-center">
+                                              <div class="min-w-50 flex relative justify-end gap-2">
+                                                <button id="btn-tldr" class="action-btn">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="fill-[none] stroke-[2.3px] stroke-white overflow-hidden cursor-pointer size-4">
+                                                    <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                  </svg>
+                                                  <span class="block cursor-pointer">TL;DR</span>
+                                                </button>
+                                                <button id="btn-blog" class="action-btn">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="fill-[none] stroke-[2.3px] stroke-white overflow-hidden cursor-pointer size-4">
+                                                    <path d="M15 12h-5" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                    <path d="M15 8h-5" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                    <path d="M19 17V5a2 2 0 0 0-2-2H4" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                    <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                  </svg>
+                                                  <span class="block cursor-pointer">Blog</span>
+                                                </button>
+                                                <button id="btn-agent" class="action-btn">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="text-white fill-[none] stroke-[2.3px] stroke-white overflow-hidden cursor-pointer size-4">
+                                                    <path d="M12 8V4H8" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                    <rect width="16" height="12" x="4" y="8" class="w-4 h-3 fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></rect>
+                                                    <path d="M2 14h2" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                    <path d="M20 14h2" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                    <path d="M15 13v2" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                    <path d="M9 13v2" class="fill-[none] stroke-[2.3px] stroke-white inline cursor-pointer"></path>
+                                                  </svg>
+                                                  <span class="text-white block cursor-pointer">Agent</span>
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <!-- SIDEBAR COLUMN -->
+                                      <aside id="sidebar" class="w-full flex flex-col gap-4 lg:block">
+                                        <div class="w-full min-w-0 flex isolate flex-col">
+                                          <div class="h-full flex flex-col">
+                                            <div class="min-h-0 flex flex-col">
+                                              <div class="flex flex-col size-full">
+                                                <!-- TAB HEADERS -->
+                                                <div class="mb-2 shrink-[0]">
+                                                  <div class="w-full flex gap-2">
+                                                    <div class="flex relative overflow-auto px-3 gap-2">
+                                                      <button data-tab="chapters" class="tab pt-2 text-white leading-[16px] text-xs bg-transparent flex text-center items-center cursor-pointer px-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="mr-[6px] fill-[none] stroke-[2px] stroke-white overflow-hidden cursor-pointer size-4">
+                                                          <path d="M17 6H3" class="fill-[none] stroke-[2px] stroke-white inline cursor-pointer"></path>
+                                                          <path d="M21 12H8" class="fill-[none] stroke-[2px] stroke-white inline cursor-pointer"></path>
+                                                          <path d="M21 18H8" class="fill-[none] stroke-[2px] stroke-white inline cursor-pointer"></path>
+                                                          <path d="M3 12v6" class="fill-[none] stroke-[2px] stroke-white inline cursor-pointer"></path>
+                                                        </svg>
+                                                        <span class="block text-nowrap whitespace-nowrap cursor-pointer">Chapters</span>
+                                                      </button>
+                                                      <button data-tab="transcript" class="tab pt-2 text-gray-300 leading-[16px] text-xs bg-transparent opacity-[0.6] flex text-center items-center cursor-pointer px-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="mr-[6px] opacity-[0.6] fill-[none] stroke-[2px] stroke-gray-300 overflow-hidden cursor-pointer size-4">
+                                                          <rect width="18" height="14" x="3" y="5" class="w-[18px] h-[14px] fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></rect>
+                                                          <path d="M7 15h4M15 15h2M7 11h2M13 11h4" class="fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></path>
+                                                        </svg>
+                                                        <span class="block text-nowrap whitespace-nowrap cursor-pointer">Transcript</span>
+                                                      </button>
+                                                      <button data-tab="xray" class="tab pt-2 text-gray-300 leading-[16px] text-xs bg-transparent opacity-[0.6] flex text-center items-center cursor-pointer px-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="mr-[6px] opacity-[0.6] fill-[none] stroke-[2px] stroke-gray-300 overflow-hidden cursor-pointer size-4">
+                                                          <path d="M3 7V5a2 2 0 0 1 2-2h2" class="fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></path>
+                                                          <path d="M17 3h2a2 2 0 0 1 2 2v2" class="fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></path>
+                                                          <path d="M21 17v2a2 2 0 0 1-2 2h-2" class="fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></path>
+                                                          <path d="M7 21H5a2 2 0 0 1-2-2v-2" class="fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></path>
+                                                          <path d="M7 8h8" class="fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></path>
+                                                          <path d="M7 12h10" class="fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></path>
+                                                          <path d="M7 16h6" class="fill-[none] stroke-[2px] stroke-gray-300 inline cursor-pointer"></path>
+                                                        </svg>
+                                                        <span class="block text-nowrap whitespace-nowrap cursor-pointer">X-ray</span>
+                                                      </button>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                
+                                                <!-- TAB PANELS -->
+                                                <div class="h-[482.36px] bg-zinc-900 grow-[1] relative border-[#7980864d] border-[1px] rounded-[6.4px]">
+                                                  <div class="h-full grow-[1] overflow-auto px-3">
+                                                    <div class="h-full flex relative flex-col">
+                                                      <div class="h-10 top-0 z-[10] bg-[linear-gradient(rgba(23,_26,_33,_0.5),_rgba(0,_0,_0,_0))] absolute inset-x-0"></div>
+                                                      <div class="h-10 bottom-0 z-[10] bg-[linear-gradient(to_top,_rgba(23,_26,_33,_0.5),_rgba(0,_0,_0,_0))] absolute inset-x-0"></div>
+                                                      
+                                                      <!-- Chapters Panel -->
+                                                      <div data-panel="chapters" class="panel pt-8 pb-12 h-full flex overflow-auto flex-col gap-6"></div>
+                                                      <!-- Transcript Panel -->
+                                                      <div data-panel="transcript" class="panel hidden h-full flex flex-col">
+                                                        <!-- Search Header -->
+                                                        <div class="pt-6 pb-4 px-3 border-b border-zinc-700/50">
+                                                          <div class="flex items-center gap-2 mb-2">
+                                                            <div class="relative flex-1">
+                                                              <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                                </svg>
+                                                              </div>
+                                                              <input
+                                                                type="text"
+                                                                id="transcript-search"
+                                                                class="block w-full pl-10 pr-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                                placeholder="Search in transcript..."
+                                                              />
+                                                            </div>
+                                                          </div>
+                                                          <div class="flex items-center justify-between">
+                                                            <div id="search-results-info" class="text-xs text-gray-400 hidden">
+                                                              <span id="search-current">0</span> of <span id="search-total">0</span> matches
+                                                            </div>
+                                                            <div class="flex items-center gap-1">
+                                                              <button
+                                                                id="search-prev"
+                                                                class="p-1 rounded text-gray-400 hover:text-white hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                disabled
+                                                                title="Previous match"
+                                                              >
+                                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                                                </svg>
+                                                              </button>
+                                                              <button
+                                                                id="search-next"
+                                                                class="p-1 rounded text-gray-400 hover:text-white hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                disabled
+                                                                title="Next match"
+                                                              >
+                                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                                </svg>
+                                                              </button>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                        <!-- Transcript Content -->
+                                                        <div id="transcript-content" class="pt-4 pb-12 px-3 flex-1 overflow-auto flex flex-col gap-3"></div>
+                                                      </div>
+                                                      <!-- X-ray Panel -->
+                                                      <div data-panel="xray" class="panel hidden pt-8 pb-12 h-full flex overflow-auto flex-col">
+                                                        <p class="text-sm text-gray-400">X-ray extraction coming soon…</p>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </aside>
+
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Ask AI fixed bar -->
+    <div class="fixed bottom-4 inset-x-0 flex justify-center pointer-events-none">
+      <button
+        id="ask-ai-btn"
+        class="pointer-events-auto flex items-center space-x-2 px-6 py-3 bg-zinc-900 border border-zinc-700 text-white font-semibold rounded-full shadow"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6 4a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>Ask AI</span>
+      </button>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-zinc-900 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-semibold">Settings</h2>
+              <button id="close-settings" class="text-gray-400 hover:text-white">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Login Form (shown when not authenticated) -->
+            <div id="login-form" class="hidden">
+              <h3 class="text-lg font-medium mb-4">Admin Login</h3>
+              <form id="adminLoginForm" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium mb-2">Password</label>
+                  <input
+                    type="password"
+                    id="admin-password"
+                    class="w-full p-3 rounded-md bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full px-4 py-2 bg-blue-700 rounded text-sm font-medium hover:bg-blue-600 transition"
+                >
+                  Login
+                </button>
+              </form>
+            </div>
+
+            <!-- Settings Content (shown when authenticated) -->
+            <div id="settings-content" class="hidden">
+              <!-- API Keys Section -->
+              <div class="mb-8">
+                <h3 class="text-lg font-medium mb-4">API Keys</h3>
+                <div class="space-y-4">
+                  <div>
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="block text-sm font-medium">OpenAI API Key</label>
+                      <span id="openai-status" class="text-sm text-gray-400">Not configured</span>
+                    </div>
+                    <div class="flex gap-2">
+                      <input
+                        type="password"
+                        id="openai-key"
+                        placeholder="sk-..."
+                        class="flex-1 p-2 rounded bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                      />
+                      <button
+                        id="save-openai-key"
+                        class="px-4 py-2 bg-green-700 rounded text-sm hover:bg-green-600 transition"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="block text-sm font-medium">Gemini API Key</label>
+                      <span id="gemini-status" class="text-sm text-gray-400">Not configured</span>
+                    </div>
+                    <div class="flex gap-2">
+                      <input
+                        type="password"
+                        id="gemini-key"
+                        placeholder="AI..."
+                        class="flex-1 p-2 rounded bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                      />
+                      <button
+                        id="save-gemini-key"
+                        class="px-4 py-2 bg-green-700 rounded text-sm hover:bg-green-600 transition"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Model Selection -->
+              <div class="mb-8">
+                <h3 class="text-lg font-medium mb-4">Default Model</h3>
+                <select
+                  id="model-select"
+                  class="w-full p-2 rounded bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">Select a model...</option>
+                </select>
+              </div>
+
+              <!-- Chapter Generation Prompt -->
+              <div class="mb-8">
+                <h3 class="text-lg font-medium mb-4">Chapter Generation Prompt</h3>
+                <textarea
+                  id="chapter-prompt"
+                  rows="6"
+                  class="w-full p-3 rounded bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                  placeholder="Enter the prompt for AI chapter generation..."
+                ></textarea>
+                <button
+                  id="save-prompt"
+                  class="mt-2 px-4 py-2 bg-blue-700 rounded text-sm hover:bg-blue-600 transition"
+                >
+                  Save Prompt
+                </button>
+              </div>
+
+              <!-- Logout -->
+              <div class="pt-4 border-t border-zinc-700">
+                <button
+                  id="logout-btn"
+                  class="px-4 py-2 bg-red-700 rounded text-sm hover:bg-red-600 transition"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW LESSON MODAL -->
+    <div id="new-lesson-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-zinc-900 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-semibold">Create a new video lesson</h2>
+              <button id="close-new-lesson" class="text-gray-400 hover:text-white">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            
+            <form id="videoForm" class="space-y-4">
+              <div>
+                <label for="video-url" class="block text-sm font-medium mb-2">Video URL</label>
+                <input
+                  type="url"
+                  id="video-url"
+                  placeholder="https://www.youtube.com/watch?v=... or direct .mp4 URL"
+                  value="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4"
+                  class="w-full p-3 rounded-md bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label for="transcriptInput" class="block text-sm font-medium mb-2">Transcript (one line per segment)</label>
+                <textarea
+                  id="transcriptInput"
+                  rows="6"
+                  placeholder="Line 1\nLine 2\n..."
+                  class="w-full p-3 rounded-md bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                >Welcome to this sample video demonstration
+This video will help you test the Picture-in-Picture functionality
+You can click the PiP button to pop out the video
+The video will continue playing in a small window
+This allows you to multitask while watching
+Try clicking the PiP button in the video controls</textarea>
+              </div>
+              <button
+                type="submit"
+                class="w-full px-4 py-2 bg-blue-700 rounded text-sm font-medium hover:bg-blue-600 transition"
+              >
+                Generate Lesson
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plyr JS -->
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <!-- App logic -->
+    <script src="app.js"></script>
+  </body>
+</html> 
