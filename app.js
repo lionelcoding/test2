@@ -2082,144 +2082,39 @@ function setupTimelineMarkers() {
   }
 }
 
-// GitHub Pages deployment modifications
-if (window.IS_GITHUB_PAGES) {
-  console.log('GitHub Pages deployment mode enabled');
+// Standalone lesson page modifications
+if (window.IS_STANDALONE_LESSON) {
+  console.log('Standalone lesson page mode enabled');
   
-  // Override loadLessons to use embedded data
-  window.originalLoadLessons = loadLessons;
-  loadLessons = function() {
-    console.log('Loading embedded lessons:', window.EMBEDDED_LESSONS?.length || 0);
-    displayLessons(window.EMBEDDED_LESSONS || []);
-  };
-  
-  // Keep lesson navigation functional
-  window.originalLoadLessonById = loadLessonById;
-  loadLessonById = function(lessonId) {
-    const lesson = window.EMBEDDED_LESSONS.find(l => l.id == lessonId);
-    if (lesson) {
-      console.log('Loading lesson:', lesson.title);
-      initLesson(lesson);
-    } else {
-      showNotification('Lesson not found in deployed version');
-    }
-  };
-  
-  // Add openLessonPage function for deployment
-  window.openLessonPage = function(lessonId) {
-    const lesson = window.EMBEDDED_LESSONS.find(l => l.id == lessonId);
-    if (lesson) {
-      console.log('Opening lesson page:', lesson.title);
-      // Navigate to the individual lesson page
-      window.location.href = `pages/lesson-${lessonId}.html`;
-    } else {
-      showNotification('Lesson page not found in deployed version');
-    }
-  };
-  
-  // Wait for DOM to be ready, then setup deployment features
+  // Disable server-dependent features for lesson pages
   document.addEventListener('DOMContentLoaded', function() {
-    console.log('Setting up deployment features...');
+    console.log('Setting up standalone lesson page...');
     
-    // Ensure dashboard is shown on page load
-    const homeScreen = document.getElementById('home-screen');
-    const appGrid = document.getElementById('app-grid');
-    
-    if (homeScreen && appGrid) {
-      homeScreen.classList.remove('hidden');
-      appGrid.classList.add('hidden');
-    }
-    
-    // Auto-load lessons for dashboard
-    if (window.EMBEDDED_LESSONS && window.EMBEDDED_LESSONS.length > 0) {
-      console.log('Auto-loading lessons for dashboard');
-      loadLessons();
-    }
-    
-    // Disable lesson creation form
-    const form = document.getElementById('videoForm');
-    if (form) {
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        showNotification('❌ Lesson creation is not available in deployed version');
-      });
-    }
-    
-    // Disable lesson editing/deletion buttons
+    // Disable any server-dependent buttons that might exist
     const disableServerFeatures = () => {
-      // Disable create lesson buttons
-      const createBtns = document.querySelectorAll('#new-lesson-btn, #new-lesson-btn-2');
-      createBtns.forEach(btn => {
-        if (btn) {
-          btn.disabled = true;
-          btn.title = 'Not available in deployed version';
-          btn.style.opacity = '0.5';
-          btn.onclick = (e) => {
-            e.preventDefault();
-            showNotification('❌ Lesson creation is not available in deployed version');
-          };
-        }
+      // Disable any form submissions
+      const forms = document.querySelectorAll('form');
+      forms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          console.log('Form submission disabled in standalone lesson page');
+        });
       });
       
-      // Disable edit buttons
-      document.querySelectorAll('button[onclick*="editLesson"]').forEach(btn => {
-        btn.disabled = true;
-        btn.title = 'Not available in deployed version';
-        btn.style.opacity = '0.5';
+      // Hide or disable any admin/edit features
+      const adminElements = document.querySelectorAll('[id*="admin"], [id*="edit"], [id*="delete"], [class*="admin"]');
+      adminElements.forEach(element => {
+        element.style.display = 'none';
       });
-      
-      // Disable delete buttons and selection features
-      document.querySelectorAll('button[onclick*="deleteLesson"], .lesson-checkbox, #select-all-btn, #delete-selected-btn').forEach(btn => {
-        btn.disabled = true;
-        btn.title = 'Not available in deployed version';
-        btn.style.opacity = '0.5';
-      });
-      
-      // Disable GitHub deployment button
-      const deployBtn = document.getElementById('deploy-github-btn');
-      if (deployBtn) {
-        deployBtn.disabled = true;
-        deployBtn.title = 'Not available in deployed version';
-        deployBtn.style.opacity = '0.5';
-      }
-      
-      // Disable regenerate pages button
-      const regenerateBtn = document.getElementById('regenerate-pages-btn');
-      if (regenerateBtn) {
-        regenerateBtn.disabled = true;
-        regenerateBtn.title = 'Not available in deployed version';
-        regenerateBtn.style.opacity = '0.5';
-      }
     };
     
-    // Initial disable
+    // Apply feature disabling
     disableServerFeatures();
     
-    // Re-disable after lesson list updates
-    const originalDisplayLessons = displayLessons;
-    displayLessons = function(lessons) {
-      originalDisplayLessons(lessons);
-      setTimeout(disableServerFeatures, 100);
-    };
-    
-    // Add deployment banner
-    const banner = document.createElement('div');
-    banner.className = 'bg-blue-900 bg-opacity-50 text-blue-200 p-3 rounded-lg mb-4';
-    banner.innerHTML = `
-      <div class="flex items-center">
-        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
-        </svg>
-        <span><strong>Deployed Version</strong> - View lessons, play videos, search transcripts, and navigate chapters. Creation and editing features are disabled.</span>
-      </div>
-    `;
-    
-    const contentArea = document.querySelector('.flex-1.overflow-y-auto.p-8');
-    if (contentArea) {
-      contentArea.insertBefore(banner, contentArea.firstChild);
-    }
+    // Re-apply after any dynamic content loads
+    setTimeout(disableServerFeatures, 500);
   });
   
   // Keep all viewing features functional
-  // (transcript search, timeline markers, chapters, etc. remain unchanged)
+  // (video player, transcript search, timeline markers, chapters, etc. remain unchanged)
 }
